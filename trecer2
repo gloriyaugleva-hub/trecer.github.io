@@ -1,0 +1,1273 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyFinance - Финансовый трекер</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: #34495e;
+            padding: 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-tabs li {
+            flex: 1;
+        }
+
+        .nav-tabs a {
+            display: block;
+            padding: 20px;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs a:hover, .nav-tabs a.active {
+            background: #2c3e50;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .tab-content {
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .transaction-list {
+            margin-top: 20px;
+        }
+
+        .transaction-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .transaction-item.income {
+            border-left-color: #27ae60;
+        }
+
+        .transaction-item.expense {
+            border-left-color: #e74c3c;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .fixed-expenses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .fixed-expense-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .summary-income {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .summary-expense {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .summary-balance {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .export-import-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .btn-import {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .btn-backup {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+        }
+
+        .backup-notice {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .backup-notice h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            margin: 0 15px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        /* Книги */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #f39c12;
+            transition: transform 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .book-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .book-author {
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .book-description {
+            color: #34495e;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .book-rating {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        /* История по месяцам */
+        .month-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .month-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .month-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .stat-income {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .stat-expense {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .stat-savings {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn-group button {
+                width: 100%;
+            }
+
+            .month-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MyFinance</h1>
+            <div class="subtitle">Управляйте своими финансами с умом</div>
+        </header>
+
+        <nav>
+            <ul class="nav-tabs">
+                <li><a href="#dashboard" class="nav-link active">Главная</a></li>
+                <li><a href="#transactions" class="nav-link">Транзакции</a></li>
+                <li><a href="#fixed-expenses" class="nav-link">Обязательные траты</a></li>
+                <li><a href="#history" class="nav-link">История</a></li>
+                <li><a href="#books" class="nav-link">Книги</a></li>
+                <li><a href="#backup" class="nav-link">Резервные копии</a></li>
+            </ul>
+        </nav>
+
+        <div class="tab-content">
+            <!-- Главная страница -->
+            <div id="dashboard" class="tab-pane active">
+                <div class="summary">
+                    <div class="summary-item summary-income">
+                        <h3>Доходы</h3>
+                        <div id="total-income" class="amount">0 ₽</div>
+                    </div>
+                    <div class="summary-item summary-expense">
+                        <h3>Расходы</h3>
+                        <div id="total-expense" class="amount">0 ₽</div>
+                    </div>
+                    <div class="summary-item summary-balance">
+                        <h3>Баланс</h3>
+                        <div id="total-balance" class="amount">0 ₽</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Расходы по категориям (текущий месяц)</h3>
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Страница транзакций -->
+            <div id="transactions" class="tab-pane">
+                <div class="dashboard">
+                    <div class="card">
+                        <h3>Добавить транзакцию</h3>
+                        <form id="transaction-form">
+                            <div class="form-group">
+                                <label>Тип операции</label>
+                                <select id="type" required>
+                                    <option value="income">Доход</option>
+                                    <option value="expense">Расход</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Сумма</label>
+                                <input type="number" id="amount" placeholder="Введите сумму" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Категория</label>
+                                <select id="category" required>
+                                    <option value="">Выберите категорию</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Дата</label>
+                                <input type="date" id="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Описание</label>
+                                <input type="text" id="description" placeholder="Краткое описание">
+                            </div>
+                            <button type="submit">Добавить</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h3>История операций</h3>
+                        <div id="transactions-list" class="transaction-list">
+                            <!-- Список транзакций будет здесь -->
+                        </div>
+                        <div class="pagination">
+                            <button id="prev-page" disabled>← Назад</button>
+                            <span class="pagination-info" id="page-info">Страница 1 из 1</span>
+                            <button id="next-page" disabled>Вперед →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Страница обязательных трат -->
+            <div id="fixed-expenses" class="tab-pane">
+                <div class="card">
+                    <h3>Добавить обязательную трату</h3>
+                    <form id="fixed-expense-form">
+                        <div class="form-group">
+                            <label>Название</label>
+                            <input type="text" id="expense-name" placeholder="Например: Коммунальные услуги" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Сумма</label>
+                            <input type="number" id="expense-amount" placeholder="Сумма в месяц" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Категория</label>
+                            <select id="expense-category" required>
+                                <option value="ЖКХ">ЖКХ</option>
+                                <option value="Транспорт">Транспорт</option>
+                                <option value="Связь">Связь и интернет</option>
+                                <option value="Кредиты">Кредиты и ипотека</option>
+                                <option value="Страхование">Страхование</option>
+                                <option value="Образование">Образование</option>
+                                <option value="Другое">Другое</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Дата оплаты (число месяца)</label>
+                            <input type="number" id="payment-day" min="1" max="31" placeholder="1-31" required>
+                        </div>
+                        <button type="submit">Добавить</button>
+                    </form>
+                </div>
+
+                <div class="fixed-expenses-grid" id="fixed-expenses-list">
+                    <!-- Список обязательных трат будет здесь -->
+                </div>
+            </div>
+
+            <!-- История по месяцам -->
+            <div id="history" class="tab-pane">
+                <div class="card">
+                    <h3>История доходов и расходов по месяцам</h3>
+                    <div class="month-selector">
+                        <select id="year-select">
+                            <!-- Годы будут добавлены через JS -->
+                        </select>
+                        <select id="month-select">
+                            <option value="0">Январь</option>
+                            <option value="1">Февраль</option>
+                            <option value="2">Март</option>
+                            <option value="3">Апрель</option>
+                            <option value="4">Май</option>
+                            <option value="5">Июнь</option>
+                            <option value="6">Июль</option>
+                            <option value="7">Август</option>
+                            <option value="8">Сентябрь</option>
+                            <option value="9">Октябрь</option>
+                            <option value="10">Ноябрь</option>
+                            <option value="11">Декабрь</option>
+                        </select>
+                        <button onclick="loadMonthlyData()">Показать</button>
+                    </div>
+                </div>
+
+                <div id="monthly-data">
+                    <!-- Данные по месяцам будут здесь -->
+                </div>
+            </div>
+
+            <!-- Книги по финансовой грамотности -->
+            <div id="books" class="tab-pane">
+                <div class="card">
+                    <h3>Рекомендуемая литература по финансовой грамотности</h3>
+                    <p>Подборка лучших книг для управления личными финансами и инвестирования</p>
+                </div>
+
+                <div class="books-grid" id="books-list">
+                    <!-- Список книг будет здесь -->
+                </div>
+            </div>
+
+            <!-- Страница резервных копий -->
+            <div id="backup" class="tab-pane">
+                <!-- ... (существующий код резервных копий) ... -->
+                <div class="export-import-section">
+                    <h3>Экспорт данных</h3>
+                    <p>Сохраните все ваши финансовые данные в файл для резервного копирования или переноса на другое устройство.</p>
+                    <div class="btn-group">
+                        <button class="btn-export" onclick="exportData()">📥 Экспорт всех данных</button>
+                        <button class="btn-export" onclick="exportTransactions()">💳 Экспорт транзакций</button>
+                        <button class="btn-export" onclick="exportFixedExpenses()">🏠 Экспорт обязательных трат</button>
+                    </div>
+                </div>
+
+                <div class="export-import-section">
+                    <h3>Импорт данных</h3>
+                    <p>Загрузите ранее сохраненные данные из файла. Внимание: это перезапишет текущие данные!</p>
+                    <div class="btn-group">
+                        <label for="import-file" class="file-label">
+                            📤 Выбрать файл для импорта
+                        </label>
+                        <input type="file" id="import-file" class="file-input" accept=".json" onchange="handleFileImport(this.files)">
+                        <button class="btn-import" onclick="document.getElementById('import-file').click()">
+                            🔄 Импорт данных
+                        </button>
+                    </div>
+                </div>
+
+                <div class="export-import-section">
+                    <h3>Быстрые действия</h3>
+                    <p>Управление данными приложения</p>
+                    <div class="btn-group">
+                        <button class="btn-backup" onclick="createBackup()">💾 Создать резервную копию</button>
+                        <button class="btn-import" onclick="restoreFromBackup()">🔄 Восстановить из копии</button>
+                        <button class="delete-btn" onclick="clearAllData()" style="background: #e74c3c;">🗑️ Очистить все данные</button>
+                    </div>
+                </div>
+
+                <div class="backup-notice">
+                    <h4>💡 Советы по резервному копированию</h4>
+                    <ul>
+                        <li>Регулярно экспортируйте данные перед очисткой браузера</li>
+                        <li>Храните резервные копии в надежном месте</li>
+                        <li>Файлы сохраняются в формате JSON и содержат всю вашу финансовую историю</li>
+                        <li>Для переноса на другое устройство просто импортируйте файл</li>
+                    </ul>
+                </div>
+
+                <div id="backup-status" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация данных
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let fixedExpenses = JSON.parse(localStorage.getItem('fixedExpenses')) || [];
+        let expenseChart = null;
+        let currentPage = 1;
+        const transactionsPerPage = 10;
+
+        // Категории для доходов и расходов
+        const categories = {
+            income: ['Зарплата', 'Фриланс', 'Инвестиции', 'Подарки', 'Другое'],
+            expense: ['Продукты', 'Транспорт', 'Развлечения', 'Одежда', 'Здоровье', 'Образование', 'ЖКХ', 'Связь', 'Другое']
+        };
+
+        // Книги по финансовой грамотности
+        const financialBooks = [
+            {
+                title: "Богатый папа, бедный папа",
+                author: "Роберт Кийосаки",
+                description: "Классика финансового образования. Автор объясняет разницу в мышлении между богатыми и бедными людьми.",
+                rating: "4.7/5"
+            },
+            {
+                title: "Самый богатый человек в Вавилоне",
+                author: "Джордж Клейсон",
+                description: "Древние принципы управления деньгами, которые остаются актуальными и сегодня.",
+                rating: "4.6/5"
+            },
+            {
+                title: "Думай и богатей",
+                author: "Наполеон Хилл",
+                description: "Фундаментальная работа о силе мысли и правильном настрое для достижения богатства.",
+                rating: "4.5/5"
+            },
+            {
+                title: "Путь к финансовой свободе",
+                author: "Бодо Шефер",
+                description: "Практическое руководство по достижению финансовой независимости.",
+                rating: "4.4/5"
+            },
+            {
+                title: "Разумный инвестор",
+                author: "Бенджамин Грэм",
+                description: "Библия стоимостного инвестирования от учителя Уоррена Баффета.",
+                rating: "4.8/5"
+            },
+            {
+                title: "Мани, или Азбука денег",
+                author: "Бодо Шефер",
+                description: "Простая и понятная книга об основах финансовой грамотности для детей и взрослых.",
+                rating: "4.3/5"
+            }
+        ];
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            updateUI();
+            initializeBooks();
+            initializeHistory();
+        });
+
+        function initializeApp() {
+            // Установка текущей даты по умолчанию
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Заполнение категорий
+            updateCategoryOptions();
+            
+            // Обработчики событий
+            document.getElementById('type').addEventListener('change', updateCategoryOptions);
+            document.getElementById('transaction-form').addEventListener('submit', addTransaction);
+            document.getElementById('fixed-expense-form').addEventListener('submit', addFixedExpense);
+            
+            // Пагинация
+            document.getElementById('prev-page').addEventListener('click', prevPage);
+            document.getElementById('next-page').addEventListener('click', nextPage);
+            
+            // Навигация
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchTab(this.getAttribute('href').substring(1));
+                });
+            });
+        }
+
+        function initializeBooks() {
+            const booksList = document.getElementById('books-list');
+            financialBooks.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                bookCard.innerHTML = `
+                    <div class="book-title">${book.title}</div>
+                    <div class="book-author">${book.author}</div>
+                    <div class="book-description">${book.description}</div>
+                    <div class="book-rating">Рейтинг: ${book.rating}</div>
+                `;
+                booksList.appendChild(bookCard);
+            });
+        }
+
+        function initializeHistory() {
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            
+            // Добавляем годы от 2020 до текущего
+            for (let year = 2020; year <= currentYear; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === currentYear) option.selected = true;
+                yearSelect.appendChild(option);
+            }
+            
+            // Устанавливаем текущий месяц
+            const currentMonth = new Date().getMonth();
+            document.getElementById('month-select').value = currentMonth;
+            
+            // Загружаем данные за текущий месяц
+            loadMonthlyData();
+        }
+
+        function loadMonthlyData() {
+            const year = parseInt(document.getElementById('year-select').value);
+            const month = parseInt(document.getElementById('month-select').value);
+            
+            const monthlyData = document.getElementById('monthly-data');
+            monthlyData.innerHTML = '';
+            
+            // Фильтруем транзакции по выбранному месяцу и году
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === month;
+            });
+            
+            const income = monthTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const expense = monthTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const savings = income - expense;
+            
+            const monthCard = document.createElement('div');
+            monthCard.className = 'month-card';
+            monthCard.innerHTML = `
+                <h3>${getMonthName(month)} ${year}</h3>
+                <div class="month-stats">
+                    <div class="stat-item stat-income">
+                        <div>Доходы</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${income.toLocaleString()} ₽</div>
+                    </div>
+                    <div class="stat-item stat-expense">
+                        <div>Расходы</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${expense.toLocaleString()} ₽</div>
+                    </div>
+                    <div class="stat-item stat-savings">
+                        <div>Сбережения</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${savings.toLocaleString()} ₽</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>Детализация расходов:</h4>
+                    <div id="month-expenses-detail-${year}-${month}">
+                        <!-- Детализация будет добавлена через JS -->
+                    </div>
+                </div>
+            `;
+            
+            monthlyData.appendChild(monthCard);
+            
+            // Добавляем детализацию расходов по категориям
+            updateMonthlyExpensesDetail(year, month);
+        }
+
+        function updateMonthlyExpensesDetail(year, month) {
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === month && t.type === 'expense';
+            });
+            
+            const categorySums = {};
+            monthTransactions.forEach(transaction => {
+                categorySums[transaction.category] = (categorySums[transaction.category] || 0) + transaction.amount;
+            });
+            
+            const detailContainer = document.getElementById(`month-expenses-detail-${year}-${month}`);
+            detailContainer.innerHTML = '';
+            
+            Object.entries(categorySums).forEach(([category, amount]) => {
+                const categoryItem = document.createElement('div');
+                categoryItem.style.cssText = 'display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee;';
+                categoryItem.innerHTML = `
+                    <span>${category}</span>
+                    <span style="font-weight: bold; color: #e74c3c;">${amount.toLocaleString()} ₽</span>
+                `;
+                detailContainer.appendChild(categoryItem);
+            });
+            
+            if (Object.keys(categorySums).length === 0) {
+                detailContainer.innerHTML = '<p style="color: #7f8c8d; text-align: center;">Нет данных о расходах за этот месяц</p>';
+            }
+        }
+
+        function getMonthName(monthIndex) {
+            const months = [
+                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ];
+            return months[monthIndex];
+        }
+
+        function updateCategoryOptions() {
+            const type = document.getElementById('type').value;
+            const categorySelect = document.getElementById('category');
+            categorySelect.innerHTML = '<option value="">Выберите категорию</option>';
+            
+            categories[type].forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function switchTab(tabId) {
+            // Убрать активный класс со всех вкладок и контента
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Активировать выбранную вкладку
+            document.querySelector(`[href="#${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            // Обновить график при переходе на главную
+            if (tabId === 'dashboard') {
+                updateChart();
+            }
+        }
+
+        function addTransaction(e) {
+            e.preventDefault();
+            
+            const transaction = {
+                id: Date.now(),
+                type: document.getElementById('type').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value
+            };
+            
+            transactions.push(transaction);
+            saveData();
+            updateUI();
+            this.reset();
+            document.getElementById('date').valueAsDate = new Date();
+        }
+
+        function addFixedExpense(e) {
+            e.preventDefault();
+            
+            const expense = {
+                id: Date.now(),
+                name: document.getElementById('expense-name').value,
+                amount: parseFloat(document.getElementById('expense-amount').value),
+                category: document.getElementById('expense-category').value,
+                paymentDay: parseInt(document.getElementById('payment-day').value)
+            };
+            
+            fixedExpenses.push(expense);
+            saveData();
+            updateUI();
+            this.reset();
+        }
+
+        function deleteTransaction(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            saveData();
+            updateUI();
+        }
+
+        function deleteFixedExpense(id) {
+            fixedExpenses = fixedExpenses.filter(e => e.id !== id);
+            saveData();
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('fixedExpenses', JSON.stringify(fixedExpenses));
+        }
+
+        function updateUI() {
+            updateTransactionsList();
+            updateFixedExpensesList();
+            updateSummary();
+            updateChart();
+            updatePagination();
+        }
+
+        function updateTransactionsList() {
+            const list = document.getElementById('transactions-list');
+            list.innerHTML = '';
+            
+            const sortedTransactions = transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const totalPages = Math.ceil(sortedTransactions.length / transactionsPerPage);
+            
+            // Получаем транзакции для текущей страницы
+            const startIndex = (currentPage - 1) * transactionsPerPage;
+            const endIndex = startIndex + transactionsPerPage;
+            const pageTransactions = sortedTransactions.slice(startIndex, endIndex);
+            
+            pageTransactions.forEach(transaction => {
+                const item = document.createElement('div');
+                item.className = `transaction-item ${transaction.type}`;
+                item.innerHTML = `
+                    <div>
+                        <strong>${transaction.category}</strong>
+                        <div>${transaction.description || 'Без описания'}</div>
+                        <small>${formatDate(transaction.date)}</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: bold; color: ${transaction.type === 'income' ? '#27ae60' : '#e74c3c'}">
+                            ${transaction.type === 'income' ? '+' : '-'}${transaction.amount} ₽
+                        </div>
+                        <button class="delete-btn" onclick="deleteTransaction(${transaction.id})">Удалить</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            
+            if (pageTransactions.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Нет транзакций</p>';
+            }
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            
+            pageInfo.textContent = `Страница ${currentPage} из ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTransactionsList();
+                updatePagination();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTransactionsList();
+                updatePagination();
+            }
+        }
+
+        function updateFixedExpensesList() {
+            const list = document.getElementById('fixed-expenses-list');
+            list.innerHTML = '';
+            
+            fixedExpenses.forEach(expense => {
+                const item = document.createElement('div');
+                item.className = 'fixed-expense-item';
+                item.innerHTML = `
+                    <h4>${expense.name}</h4>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #e74c3c; margin: 10px 0;">
+                        ${expense.amount} ₽/мес
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Категория:</strong> ${expense.category}
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Дата оплаты:</strong> ${expense.paymentDay} число
+                    </div>
+                    <button class="delete-btn" onclick="deleteFixedExpense(${expense.id})">Удалить</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateSummary() {
+            const totalIncome = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalExpense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalFixedExpense = fixedExpenses.reduce((sum, e) => sum + e.amount, 0);
+            const totalExpenseWithFixed = totalExpense + totalFixedExpense;
+            const balance = totalIncome - totalExpenseWithFixed;
+            
+            document.getElementById('total-income').textContent = `${totalIncome.toLocaleString()} ₽`;
+            document.getElementById('total-expense').textContent = `${totalExpenseWithFixed.toLocaleString()} ₽`;
+            document.getElementById('total-balance').textContent = `${balance.toLocaleString()} ₽`;
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            
+            // Удаляем старый график если существует
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+            
+            // Получаем данные за текущий месяц
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            const monthlyExpenses = transactions.filter(t => {
+                const date = new Date(t.date);
+                return t.type === 'expense' && 
+                       date.getMonth() === currentMonth && 
+                       date.getFullYear() === currentYear;
+            });
+            
+            // Группируем по категориям
+            const categorySums = {};
+            monthlyExpenses.forEach(transaction => {
+                categorySums[transaction.category] = (categorySums[transaction.category] || 0) + transaction.amount;
+            });
+            
+            // Создаем новый график
+            expenseChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categorySums),
+                    datasets: [{
+                        data: Object.values(categorySums),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Распределение расходов'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Функции экспорта/импорта (остаются без изменений)
+        function exportData() {
+            const data = {
+                transactions: transactions,
+                fixedExpenses: fixedExpenses,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            downloadJSON(data, 'myfinance_backup_all.json');
+            showStatus('✅ Все данные успешно экспортированы!', 'success');
+        }
+
+        function exportTransactions() {
+            const data = {
+                transactions: transactions,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            downloadJSON(data, 'myfinance_transactions.json');
+            showStatus('✅ Транзакции успешно экспортированы!', 'success');
+        }
+
+        function exportFixedExpenses() {
+            const data = {
+                fixedExpenses: fixedExpenses,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            downloadJSON(data, 'myfinance_fixed_expenses.json');
+            showStatus('✅ Обязательные траты успешно экспортированы!', 'success');
+        }
+
+        function downloadJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function handleFileImport(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    importData(data);
+                } catch (error) {
+                    showStatus('❌ Ошибка: Файл поврежден или имеет неверный формат', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function importData(data) {
+            if (confirm('Внимание! Это действие перезапишет все текущие данные. Продолжить?')) {
+                if (data.transactions) {
+                    transactions = data.transactions;
+                }
+                if (data.fixedExpenses) {
+                    fixedExpenses = data.fixedExpenses;
+                }
+                
+                saveData();
+                updateUI();
+                showStatus('✅ Данные успешно импортированы!', 'success');
+            }
+        }
+
+        function createBackup() {
+            const backup = {
+                transactions: transactions,
+                fixedExpenses: fixedExpenses,
+                backupDate: new Date().toISOString(),
+                totalRecords: transactions.length + fixedExpenses.length,
+                summary: {
+                    totalIncome: transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+                    totalExpense: transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0),
+                    totalFixedExpenses: fixedExpenses.reduce((sum, e) => sum + e.amount, 0)
+                }
+            };
+            
+            localStorage.setItem('finance_backup', JSON.stringify(backup));
+            showStatus('✅ Резервная копия создана и сохранена в браузере!', 'success');
+        }
+
+        function restoreFromBackup() {
+            const backup = localStorage.getItem('finance_backup');
+            if (!backup) {
+                showStatus('❌ Резервная копия не найдена', 'error');
+                return;
+            }
+            
+            if (confirm('Восстановить данные из последней резервной копии?')) {
+                try {
+                    const data = JSON.parse(backup);
+                    transactions = data.transactions || [];
+                    fixedExpenses = data.fixedExpenses || [];
+                    saveData();
+                    updateUI();
+                    showStatus('✅ Данные восстановлены из резервной копии!', 'success');
+                } catch (error) {
+                    showStatus('❌ Ошибка при восстановлении данных', 'error');
+                }
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('ВНИМАНИЕ! Это действие удалит ВСЕ данные без возможности восстановления. Продолжить?')) {
+                transactions = [];
+                fixedExpenses = [];
+                saveData();
+                updateUI();
+                showStatus('🗑️ Все данные очищены', 'info');
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('backup-status');
+            statusEl.innerHTML = `
+                <div style="padding: 10px; border-radius: 5px; background: ${
+                    type === 'success' ? '#d4edda' : 
+                    type === 'error' ? '#f8d7da' : 
+                    '#fff3cd'
+                }; color: ${
+                    type === 'success' ? '#155724' : 
+                    type === 'error' ? '#721c24' : 
+                    '#856404'
+                }; border: 1px solid ${
+                    type === 'success' ? '#c3e6cb' : 
+                    type === 'error' ? '#f5c6cb' : 
+                    '#ffeaa7'
+                }">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                statusEl.innerHTML = '';
+            }, 5000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU');
+        }
+    </script>
+</body>
+</html>
