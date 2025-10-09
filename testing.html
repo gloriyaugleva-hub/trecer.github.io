@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -284,6 +283,122 @@
             margin-bottom: 10px;
         }
 
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            margin: 0 15px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        /* Книги */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #f39c12;
+            transition: transform 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .book-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .book-author {
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .book-description {
+            color: #34495e;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .book-rating {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        /* История по месяцам */
+        .month-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .month-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .month-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .stat-income {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .stat-expense {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .stat-savings {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -300,6 +415,10 @@
             .btn-group button {
                 width: 100%;
             }
+
+            .month-selector {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -315,6 +434,8 @@
                 <li><a href="#dashboard" class="nav-link active">Главная</a></li>
                 <li><a href="#transactions" class="nav-link">Транзакции</a></li>
                 <li><a href="#fixed-expenses" class="nav-link">Обязательные траты</a></li>
+                <li><a href="#history" class="nav-link">История</a></li>
+                <li><a href="#books" class="nav-link">Книги</a></li>
                 <li><a href="#backup" class="nav-link">Резервные копии</a></li>
             </ul>
         </nav>
@@ -383,6 +504,11 @@
                         <div id="transactions-list" class="transaction-list">
                             <!-- Список транзакций будет здесь -->
                         </div>
+                        <div class="pagination">
+                            <button id="prev-page" disabled>← Назад</button>
+                            <span class="pagination-info" id="page-info">Страница 1 из 1</span>
+                            <button id="next-page" disabled>Вперед →</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -425,8 +551,52 @@
                 </div>
             </div>
 
+            <!-- История по месяцам -->
+            <div id="history" class="tab-pane">
+                <div class="card">
+                    <h3>История доходов и расходов по месяцам</h3>
+                    <div class="month-selector">
+                        <select id="year-select">
+                            <!-- Годы будут добавлены через JS -->
+                        </select>
+                        <select id="month-select">
+                            <option value="0">Январь</option>
+                            <option value="1">Февраль</option>
+                            <option value="2">Март</option>
+                            <option value="3">Апрель</option>
+                            <option value="4">Май</option>
+                            <option value="5">Июнь</option>
+                            <option value="6">Июль</option>
+                            <option value="7">Август</option>
+                            <option value="8">Сентябрь</option>
+                            <option value="9">Октябрь</option>
+                            <option value="10">Ноябрь</option>
+                            <option value="11">Декабрь</option>
+                        </select>
+                        <button onclick="loadMonthlyData()">Показать</button>
+                    </div>
+                </div>
+
+                <div id="monthly-data">
+                    <!-- Данные по месяцам будут здесь -->
+                </div>
+            </div>
+
+            <!-- Книги по финансовой грамотности -->
+            <div id="books" class="tab-pane">
+                <div class="card">
+                    <h3>Рекомендуемая литература по финансовой грамотности</h3>
+                    <p>Подборка лучших книг для управления личными финансами и инвестирования</p>
+                </div>
+
+                <div class="books-grid" id="books-list">
+                    <!-- Список книг будет здесь -->
+                </div>
+            </div>
+
             <!-- Страница резервных копий -->
             <div id="backup" class="tab-pane">
+                <!-- ... (существующий код резервных копий) ... -->
                 <div class="export-import-section">
                     <h3>Экспорт данных</h3>
                     <p>Сохраните все ваши финансовые данные в файл для резервного копирования или переноса на другое устройство.</p>
@@ -481,6 +651,8 @@
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         let fixedExpenses = JSON.parse(localStorage.getItem('fixedExpenses')) || [];
         let expenseChart = null;
+        let currentPage = 1;
+        const transactionsPerPage = 10;
 
         // Категории для доходов и расходов
         const categories = {
@@ -488,10 +660,52 @@
             expense: ['Продукты', 'Транспорт', 'Развлечения', 'Одежда', 'Здоровье', 'Образование', 'ЖКХ', 'Связь', 'Другое']
         };
 
+        // Книги по финансовой грамотности
+        const financialBooks = [
+            {
+                title: "Богатый папа, бедный папа",
+                author: "Роберт Кийосаки",
+                description: "Классика финансового образования. Автор объясняет разницу в мышлении между богатыми и бедными людьми.",
+                rating: "4.7/5"
+            },
+            {
+                title: "Самый богатый человек в Вавилоне",
+                author: "Джордж Клейсон",
+                description: "Древние принципы управления деньгами, которые остаются актуальными и сегодня.",
+                rating: "4.6/5"
+            },
+            {
+                title: "Думай и богатей",
+                author: "Наполеон Хилл",
+                description: "Фундаментальная работа о силе мысли и правильном настрое для достижения богатства.",
+                rating: "4.5/5"
+            },
+            {
+                title: "Путь к финансовой свободе",
+                author: "Бодо Шефер",
+                description: "Практическое руководство по достижению финансовой независимости.",
+                rating: "4.4/5"
+            },
+            {
+                title: "Разумный инвестор",
+                author: "Бенджамин Грэм",
+                description: "Библия стоимостного инвестирования от учителя Уоррена Баффета.",
+                rating: "4.8/5"
+            },
+            {
+                title: "Мани, или Азбука денег",
+                author: "Бодо Шефер",
+                description: "Простая и понятная книга об основах финансовой грамотности для детей и взрослых.",
+                rating: "4.3/5"
+            }
+        ];
+
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             updateUI();
+            initializeBooks();
+            initializeHistory();
         });
 
         function initializeApp() {
@@ -506,6 +720,10 @@
             document.getElementById('transaction-form').addEventListener('submit', addTransaction);
             document.getElementById('fixed-expense-form').addEventListener('submit', addFixedExpense);
             
+            // Пагинация
+            document.getElementById('prev-page').addEventListener('click', prevPage);
+            document.getElementById('next-page').addEventListener('click', nextPage);
+            
             // Навигация
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -513,6 +731,134 @@
                     switchTab(this.getAttribute('href').substring(1));
                 });
             });
+        }
+
+        function initializeBooks() {
+            const booksList = document.getElementById('books-list');
+            financialBooks.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                bookCard.innerHTML = `
+                    <div class="book-title">${book.title}</div>
+                    <div class="book-author">${book.author}</div>
+                    <div class="book-description">${book.description}</div>
+                    <div class="book-rating">Рейтинг: ${book.rating}</div>
+                `;
+                booksList.appendChild(bookCard);
+            });
+        }
+
+        function initializeHistory() {
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            
+            // Добавляем годы от 2020 до текущего
+            for (let year = 2020; year <= currentYear; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === currentYear) option.selected = true;
+                yearSelect.appendChild(option);
+            }
+            
+            // Устанавливаем текущий месяц
+            const currentMonth = new Date().getMonth();
+            document.getElementById('month-select').value = currentMonth;
+            
+            // Загружаем данные за текущий месяц
+            loadMonthlyData();
+        }
+
+        function loadMonthlyData() {
+            const year = parseInt(document.getElementById('year-select').value);
+            const month = parseInt(document.getElementById('month-select').value);
+            
+            const monthlyData = document.getElementById('monthly-data');
+            monthlyData.innerHTML = '';
+            
+            // Фильтруем транзакции по выбранному месяцу и году
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === month;
+            });
+            
+            const income = monthTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const expense = monthTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const savings = income - expense;
+            
+            const monthCard = document.createElement('div');
+            monthCard.className = 'month-card';
+            monthCard.innerHTML = `
+                <h3>${getMonthName(month)} ${year}</h3>
+                <div class="month-stats">
+                    <div class="stat-item stat-income">
+                        <div>Доходы</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${income.toLocaleString()} ₽</div>
+                    </div>
+                    <div class="stat-item stat-expense">
+                        <div>Расходы</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${expense.toLocaleString()} ₽</div>
+                    </div>
+                    <div class="stat-item stat-savings">
+                        <div>Сбережения</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${savings.toLocaleString()} ₽</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>Детализация расходов:</h4>
+                    <div id="month-expenses-detail-${year}-${month}">
+                        <!-- Детализация будет добавлена через JS -->
+                    </div>
+                </div>
+            `;
+            
+            monthlyData.appendChild(monthCard);
+            
+            // Добавляем детализацию расходов по категориям
+            updateMonthlyExpensesDetail(year, month);
+        }
+
+        function updateMonthlyExpensesDetail(year, month) {
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === month && t.type === 'expense';
+            });
+            
+            const categorySums = {};
+            monthTransactions.forEach(transaction => {
+                categorySums[transaction.category] = (categorySums[transaction.category] || 0) + transaction.amount;
+            });
+            
+            const detailContainer = document.getElementById(`month-expenses-detail-${year}-${month}`);
+            detailContainer.innerHTML = '';
+            
+            Object.entries(categorySums).forEach(([category, amount]) => {
+                const categoryItem = document.createElement('div');
+                categoryItem.style.cssText = 'display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee;';
+                categoryItem.innerHTML = `
+                    <span>${category}</span>
+                    <span style="font-weight: bold; color: #e74c3c;">${amount.toLocaleString()} ₽</span>
+                `;
+                detailContainer.appendChild(categoryItem);
+            });
+            
+            if (Object.keys(categorySums).length === 0) {
+                detailContainer.innerHTML = '<p style="color: #7f8c8d; text-align: center;">Нет данных о расходах за этот месяц</p>';
+            }
+        }
+
+        function getMonthName(monthIndex) {
+            const months = [
+                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ];
+            return months[monthIndex];
         }
 
         function updateCategoryOptions() {
@@ -601,6 +947,7 @@
             updateFixedExpensesList();
             updateSummary();
             updateChart();
+            updatePagination();
         }
 
         function updateTransactionsList() {
@@ -608,8 +955,14 @@
             list.innerHTML = '';
             
             const sortedTransactions = transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const totalPages = Math.ceil(sortedTransactions.length / transactionsPerPage);
             
-            sortedTransactions.forEach(transaction => {
+            // Получаем транзакции для текущей страницы
+            const startIndex = (currentPage - 1) * transactionsPerPage;
+            const endIndex = startIndex + transactionsPerPage;
+            const pageTransactions = sortedTransactions.slice(startIndex, endIndex);
+            
+            pageTransactions.forEach(transaction => {
                 const item = document.createElement('div');
                 item.className = `transaction-item ${transaction.type}`;
                 item.innerHTML = `
@@ -627,6 +980,38 @@
                 `;
                 list.appendChild(item);
             });
+            
+            if (pageTransactions.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Нет транзакций</p>';
+            }
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            
+            pageInfo.textContent = `Страница ${currentPage} из ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTransactionsList();
+                updatePagination();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTransactionsList();
+                updatePagination();
+            }
         }
 
         function updateFixedExpensesList() {
@@ -726,7 +1111,7 @@
             });
         }
 
-        // Функции экспорта/импорта
+        // Функции экспорта/импорта (остаются без изменений)
         function exportData() {
             const data = {
                 transactions: transactions,
@@ -807,7 +1192,6 @@
         }
 
         function createBackup() {
-            // Создаем резервную копию с дополнительной информацией
             const backup = {
                 transactions: transactions,
                 fixedExpenses: fixedExpenses,
